@@ -6,6 +6,8 @@ import Header from './Components/Header';
 import HomePage from './Pages/HomePage';
 import CoinPage from './Pages/CoinPage';
 import { makeStyles } from '@mui/material';
+import UserContext from './Context/UserContext';
+import CustomAlert from './Components/CustomAlert';
 
 function App() {
 
@@ -28,6 +30,8 @@ function App() {
             <Route path='/coin/:id' element={<CoinPage/>} />
         </Routes>
     </div>
+        <CustomAlert/>
+   
     </BrowserRouter>
    
   );
