@@ -1,12 +1,16 @@
-import { Container,Grid,Box, Typography,Stack, LinearProgress } from '@mui/material';
+import { Container,Grid,Box, Typography,Stack, LinearProgress, Button } from '@mui/material';
 import axios from 'axios';
+import { doc, setDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import CoinInfo from '../Components/CoinInfo';
 import { SingleCoin } from '../Config/api';
+import { db } from '../Config/firebase-config';
+import { UserState } from '../Context/UserContext';
 // import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from 'react-html-parser'
 
 const CoinPage = () => {
+  const {user,watchlist,setAlert} = UserState();
   const {id} = useParams();
   const [coin,setCoin] = useState();
   const fetchCoin = ()=>{
@@ -24,6 +28,50 @@ const CoinPage = () => {
     return n.toString().replace(/\B(?!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
   }
   const currency = 'inr';
+
+  ///adding watchlist 
+  const inWatchlist = watchlist.includes(coin?.id);
+  const addwatchlist = ()=>{
+    const coinRef = doc(db,'watchlist',user.uid);
+    try {
+      setDoc(coinRef,{
+        coins:watchlist?[...watchlist,coin?.id] : [coin?.id]
+       })
+       setAlert({
+        open:true,
+        message:'Coin Inserted ',
+        type:'success'
+       })
+    } catch (error) {
+      setAlert({
+        open:true,
+        message:error.message,
+        type:'error'
+       })
+    }
+  }
+
+  const removeFromwatchlist =()=>{
+    const coinRef = doc(db,'watchlist',user.uid);
+    try {
+      setDoc(coinRef,{
+        coins : watchlist.filter((watch)=>watch !== coin?.id)
+       },
+       {merge:'true'}
+       );
+       setAlert({
+        open:true,
+        message:'Coin Removed !! ',
+        type:'error'
+       })
+    } catch (error) {
+      setAlert({
+        open:true,
+        message:error.message,
+        type:'error'
+       })
+    }
+  }
 
   if(!coin) return <LinearProgress  style={{backgroundColor:'gold'}}/>
   return (
@@ -55,6 +103,16 @@ const CoinPage = () => {
                       <h2 style={{textAlign:'center',color:'white',fontFamily:'Montserrat',margin:5}}>Market Cap : <span style={{fontWeight:'500'}}> ₹ {numberWithCommas( coin?.market_data.market_cap[currency.toLowerCase()].toString().slice(0,-6))}M</span></h2>
                       </Stack>
                   </Stack>
+                  {
+                    (user) && <Box sx={{mt:3}}>
+                        {
+                           (inWatchlist)?<Button onClick={()=>removeFromwatchlist()} fullWidth sx={{color:'white',fontWeight:'600',backgroundColor:'red',':hover':{backgroundColor:'red'}}}>Remove from Watchlist</Button>
+                                          :
+                                          <Button onClick={()=>addwatchlist()} fullWidth sx={{color:'white',fontWeight:'600',backgroundColor:'gold',':hover':{backgroundColor:'gold'}}}>Add to Watchlist</Button>
+                        }
+                            </Box>
+                  }
+                 
                 </Box>
 
             </Grid>

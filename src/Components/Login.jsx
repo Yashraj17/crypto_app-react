@@ -30,6 +30,7 @@ const Login = ({handleClose}) => {
     const googleServiceProvider = new GoogleAuthProvider();
     const signInwithGoogle = async ()=>{
         signInWithPopup(auth,googleServiceProvider).then(res=>{
+          handleClose()
           setAlert({
             open:true,
             message:'Login Successfull !!',

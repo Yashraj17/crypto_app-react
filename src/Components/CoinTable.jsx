@@ -3,21 +3,17 @@ import {Box,Input, TableContainer, TextField,LinearProgress, Table,TableRow, Tab
 import axios from 'axios';
 import { CoinList } from '../Config/api';
 import {useNavigate} from 'react-router-dom'
+import { UserState } from '../Context/UserContext';
 
 const CoinTable = () => {
-  const [coins,setCoins] = useState([]);
+
   const [page,setPage] = useState(1);
-  const[isloading,setIsloading] = useState(false)
 
   const navigate = useNavigate()
 
-  const tableData =  ()=>{
-    setIsloading(true)
-     axios.get(CoinList('inr')).then(res=>{
-      setCoins(res.data)
-      setIsloading(false)
-    })
-  }
+  const {coins,isloading,tableData} = UserState();
+
+
 
   useEffect(()=>{
     tableData();
@@ -72,7 +68,9 @@ const CoinTable = () => {
             </TableHead>
             <TableBody>
               {
-                coins?.slice((page-1)*10,(page-1)*10+10).map((item)=>(
+                coins?.slice((page-1)*10,(page-1)*10+10).map((item)=>{
+                  const profit = item.price_change_percentage_24h > 0;
+                return(
                   <TableRow
                   onClick={()=> navigate(`/coin/${item.id}`)}
                   sx={{marginLeft:10,cursor:'pointer'}} key={item.name}>
@@ -95,8 +93,10 @@ const CoinTable = () => {
                     </span>
                   </TableCell>
                   <TableCell>
-                    <span style={{color:'white'}}>
-                    {item.market_cap_change_percentage_24h}
+                    <span style={{ color: profit > 0 ? "lightgreen" : "red",}}>
+                    {/* {item.market_cap_change_percentage_24h} */}
+                    {profit && "+"}
+                          {item.price_change_percentage_24h.toFixed(2)}%
                     </span>
                   </TableCell>
                   <TableCell>
@@ -105,7 +105,8 @@ const CoinTable = () => {
                     </span>
                   </TableCell>
                 </TableRow>
-                ))
+                )
+                    })
               }
             
             </TableBody>

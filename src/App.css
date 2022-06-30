@@ -12,3 +12,6 @@ a{
   color:gold;
 
 }
+.scrollable::-webkit-scrollbar{
+  display: none; /* for chrome,edge, safari, opera */
+}
